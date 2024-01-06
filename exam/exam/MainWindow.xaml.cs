@@ -23,6 +23,9 @@ namespace exam
     /// </summary>
     public partial class MainWindow : Window
     {
+        /// <summary>
+        /// The budget items we're keeping track of.
+        /// </summary>
         private List<BudgetItem> budgetItems = new()
         {
             new("Grant", 300m, BudgetItemType.Income, new DateTime(2024, 1, 5), true),
@@ -43,39 +46,46 @@ namespace exam
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
+            // so that we get euros instead of pounds or dollars
             CultureInfo ci = new CultureInfo("ie-IE");
             Thread.CurrentThread.CurrentCulture = ci;
             Thread.CurrentThread.CurrentUICulture = ci;
 
-            Refresh();
+            DisplayItems(budgetItems);
         }
 
-        private void Refresh()
+        /// <summary>
+        /// Renders a provided list of items to the screen.
+        /// </summary>
+        /// <param name="items">The items to render.</param>
+        private void DisplayItems(List<BudgetItem> items)
         {
-            budgetItems.Sort();
+            items.Sort();
 
-            lbxExpenses.Items.Refresh();
-            lbxIncome.Items.Refresh();
+            //lbxExpenses.Items.Refresh();
+            //lbxIncome.Items.Refresh();
 
-            lbxIncome.ItemsSource = budgetItems.Where(i => i.ItemType is BudgetItemType.Income).ToList();
-            lbxExpenses.ItemsSource = budgetItems.Where(i => i.ItemType is BudgetItemType.Expense).ToList();
+            lbxIncome.ItemsSource = items.Where(i => i.ItemType is BudgetItemType.Income).ToList();
+            lbxExpenses.ItemsSource = items.Where(i => i.ItemType is BudgetItemType.Expense).ToList();
 
-            txtTotalIncome.Text = $"{budgetItems.TotalIncome():c}";
-            txtTotalOutgoings.Text = $"{budgetItems.TotalOutgoings():c}";
-            txtCurrentBalance.Text = $"{budgetItems.TotalBalance():c}";
+            txtTotalIncome.Text = $"{items.TotalIncome():c}";
+            txtTotalOutgoings.Text = $"{items.TotalOutgoings():c}";
+            txtCurrentBalance.Text = $"{items.TotalBalance():c}";
         }
 
         private void btnAdd_Click(object sender, RoutedEventArgs e)
         {
+            // first verifying the form data
+
             string name = tbxName.Text;
-            if (string.IsNullOrWhiteSpace(name) )
+            if (string.IsNullOrWhiteSpace(name))
             {
                 MessageBox.Show("Name is required");
                 return;
             }
 
             DateTime? date = dpDate.SelectedDate;
-            if (date == null)
+            if (date is null)
             {
                 MessageBox.Show("Date is required");
                 return;
@@ -87,13 +97,14 @@ namespace exam
                 return;
             }
 
+            // there's probably a better way to do this but it does the job
             BudgetItemType? itemType = (radioIncome.IsChecked, radioExpense.IsChecked) switch
             {
                 (true, false) => BudgetItemType.Income,
                 (false, true) => BudgetItemType.Expense,
                 _ => null
             };
-            if (itemType == null)
+            if (itemType is null)
             {
                 MessageBox.Show("Select either an Income or an Expense");
                 return;
@@ -101,16 +112,19 @@ namespace exam
 
             bool recurring = cbxRecurring.IsChecked ?? false;
 
+
+
+            // then creating the object and adding it to the list
+
             BudgetItem b = new(name, amount, (BudgetItemType)itemType, (DateTime)date, recurring);
 
-
-
             budgetItems.Add(b);
-            Refresh();
+            DisplayItems(budgetItems);
         }
 
         private void btnRemove_Click(object sender, RoutedEventArgs e)
         {
+            // again verifying first
             BudgetItem? selected = lbxIncome.SelectedValue as BudgetItem ?? lbxExpenses.SelectedValue as BudgetItem;
 
             if (selected is null)
@@ -119,10 +133,20 @@ namespace exam
                 return;
             }
 
-            Trace.WriteLine(selected);
-
+            // and displaying
             budgetItems.Remove(selected);
-            Refresh();
+            DisplayItems(budgetItems);
+        }
+
+        private void tbxSearch_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            string text = tbxSearch.Text.ToLower();
+
+            List<BudgetItem> items = budgetItems
+                .Where(i => i.ToString().ToLower().Contains(text))
+                .ToList();
+
+            DisplayItems(items);
         }
     }
 }
