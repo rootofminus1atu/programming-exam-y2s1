@@ -12,7 +12,7 @@ namespace exam
         Expense
     }
 
-    internal class BudgetItem : IComparable<BudgetItem>
+    public class BudgetItem : IComparable<BudgetItem>
     {
         public string Name { get; set; }
         public decimal Amount { get; set; }
@@ -42,5 +42,30 @@ namespace exam
             return $"{Date.Day:00}: {Name} €{Amount} - ({RecurringStr})";
         }
 
+    }
+
+
+    public static class BudgetItemExtension
+    {
+        public static decimal TotalIncome(this List<BudgetItem> items)
+        {
+            return items
+                .Where(i => i.ItemType is BudgetItemType.Income)
+                .Select(i => i.Amount)
+                .Sum();
+        }
+
+        public static decimal TotalOutgoings(this List<BudgetItem> items)
+        {
+            return items
+                .Where(i => i.ItemType is BudgetItemType.Expense)
+                .Select(i => i.Amount)
+                .Sum();
+        }
+
+        public static decimal TotalBalance(this List<BudgetItem> items)
+        {
+            return items.TotalIncome() - items.TotalOutgoings();
+        }
     }
 }
