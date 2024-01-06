@@ -52,6 +52,8 @@ namespace exam
 
         private void Refresh()
         {
+            budgetItems.Sort();
+
             lbxExpenses.Items.Refresh();
             lbxIncome.Items.Refresh();
 
@@ -109,7 +111,18 @@ namespace exam
 
         private void btnRemove_Click(object sender, RoutedEventArgs e)
         {
-            BudgetItem? selected = lbxIncome.SelectedValue as BudgetItem;
+            BudgetItem? selected = lbxIncome.SelectedValue as BudgetItem ?? lbxExpenses.SelectedValue as BudgetItem;
+
+            if (selected is null)
+            {
+                MessageBox.Show("Select an item to remove");
+                return;
+            }
+
+            Trace.WriteLine(selected);
+
+            budgetItems.Remove(selected);
+            Refresh();
         }
     }
 }
