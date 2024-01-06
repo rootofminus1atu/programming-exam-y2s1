@@ -39,7 +39,7 @@ namespace exam
 
         public override string ToString()
         {
-            return $"{Date.Day:00}: {Name} €{Amount} - ({RecurringStr})";
+            return $"{Date.Day:00}: {Name} {Amount:c} - ({RecurringStr})";
         }
 
     }

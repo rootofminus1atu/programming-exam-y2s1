@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -41,14 +43,73 @@ namespace exam
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
-            BudgetItem b1 = new("Grant", 300m, BudgetItemType.Income, new DateTime(2024, 1, 5), true);
+            CultureInfo ci = new CultureInfo("ie-IE");
+            Thread.CurrentThread.CurrentCulture = ci;
+            Thread.CurrentThread.CurrentUICulture = ci;
 
+            Refresh();
+        }
 
+        private void Refresh()
+        {
+            lbxExpenses.Items.Refresh();
+            lbxIncome.Items.Refresh();
 
-            foreach (var bi in budgetItems)
+            lbxIncome.ItemsSource = budgetItems.Where(i => i.ItemType is BudgetItemType.Income).ToList();
+            lbxExpenses.ItemsSource = budgetItems.Where(i => i.ItemType is BudgetItemType.Expense).ToList();
+
+            txtTotalIncome.Text = $"{budgetItems.TotalIncome():c}";
+            txtTotalOutgoings.Text = $"{budgetItems.TotalOutgoings():c}";
+            txtCurrentBalance.Text = $"{budgetItems.TotalBalance():c}";
+        }
+
+        private void btnAdd_Click(object sender, RoutedEventArgs e)
+        {
+            string name = tbxName.Text;
+            if (string.IsNullOrWhiteSpace(name) )
             {
-                Trace.WriteLine(bi);
+                MessageBox.Show("Name is required");
+                return;
             }
+
+            DateTime? date = dpDate.SelectedDate;
+            if (date == null)
+            {
+                MessageBox.Show("Date is required");
+                return;
+            }
+
+            if (!decimal.TryParse(tbxAmount.Text, out decimal amount))
+            {
+                MessageBox.Show("Not a valid amount");
+                return;
+            }
+
+            BudgetItemType? itemType = (radioIncome.IsChecked, radioExpense.IsChecked) switch
+            {
+                (true, false) => BudgetItemType.Income,
+                (false, true) => BudgetItemType.Expense,
+                _ => null
+            };
+            if (itemType == null)
+            {
+                MessageBox.Show("Select either an Income or an Expense");
+                return;
+            }
+
+            bool recurring = cbxRecurring.IsChecked ?? false;
+
+            BudgetItem b = new(name, amount, (BudgetItemType)itemType, (DateTime)date, recurring);
+
+
+
+            budgetItems.Add(b);
+            Refresh();
+        }
+
+        private void btnRemove_Click(object sender, RoutedEventArgs e)
+        {
+            BudgetItem? selected = lbxIncome.SelectedValue as BudgetItem;
         }
     }
 }
