@@ -16,6 +16,13 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 
+
+/*
+ * Find this repo on:
+ * https://github.com/rootofminus1atu/programming-exam-y2s1
+ */
+
+
 namespace exam
 {
     /// <summary>
@@ -47,7 +54,7 @@ namespace exam
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
             // so that we get euros instead of pounds or dollars
-            CultureInfo ci = new CultureInfo("ie-IE");
+            CultureInfo ci = new("ie-IE");
             Thread.CurrentThread.CurrentCulture = ci;
             Thread.CurrentThread.CurrentUICulture = ci;
 
@@ -62,12 +69,15 @@ namespace exam
         {
             items.Sort();
 
-            //lbxExpenses.Items.Refresh();
-            //lbxIncome.Items.Refresh();
+            // I don't think this is necessary but it doesn't hurt
+            lbxExpenses.Items.Refresh();
+            lbxIncome.Items.Refresh();
 
+            // splitting and rendering the list
             lbxIncome.ItemsSource = items.Where(i => i.ItemType is BudgetItemType.Income).ToList();
             lbxExpenses.ItemsSource = items.Where(i => i.ItemType is BudgetItemType.Expense).ToList();
 
+            // rendering the additional properties
             txtTotalIncome.Text = $"{items.TotalIncome():c}";
             txtTotalOutgoings.Text = $"{items.TotalOutgoings():c}";
             txtCurrentBalance.Text = $"{items.TotalBalance():c}";
